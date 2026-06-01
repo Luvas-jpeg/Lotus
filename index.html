@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MVP WhatsApp IA</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="control-panel" aria-label="Configuracoes do bot">
+        <div class="brand-row">
+          <div>
+            <p class="eyebrow">MVP local</p>
+            <h1>WhatsApp IA</h1>
+          </div>
+          <span id="statusBadge" class="status-badge off">Inativo</span>
+        </div>
+
+        <form id="botForm" class="settings-form">
+          <label>
+            Numero do WhatsApp
+            <input
+              id="phoneInput"
+              name="phone"
+              type="tel"
+              placeholder="+55 11 99999-9999"
+              autocomplete="tel"
+            />
+          </label>
+
+          <label>
+            Contexto da IA
+            <textarea
+              id="contextInput"
+              name="context"
+              rows="8"
+              placeholder="Ex: Voce e uma assistente comercial cordial. Ajude o cliente com informacoes sobre planos, horarios e agendamentos."
+            ></textarea>
+          </label>
+
+          <div class="grid-two">
+            <label>
+              Intervalo
+              <div class="input-with-unit">
+                <input id="intervalInput" name="interval" type="number" min="1" value="10" />
+                <span>min</span>
+              </div>
+            </label>
+
+            <label>
+              Temperatura
+              <input id="temperatureInput" name="temperature" type="range" min="0" max="1" step="0.1" value="0.6" />
+            </label>
+          </div>
+
+          <fieldset class="mode-group">
+            <legend>Modo de operacao</legend>
+            <label class="choice">
+              <input type="radio" name="mode" value="reactive" checked />
+              <span>Responder quando receber mensagem</span>
+            </label>
+            <label class="choice">
+              <input type="radio" name="mode" value="proactive" />
+              <span>Interagir automaticamente no intervalo</span>
+            </label>
+          </fieldset>
+
+          <div class="button-row">
+            <button id="saveButton" type="submit">Salvar</button>
+            <button id="toggleButton" type="button" class="secondary">Ativar bot</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="chat-panel" aria-label="Simulador de conversa">
+        <header class="chat-header">
+          <div>
+            <p class="eyebrow">Simulador</p>
+            <h2 id="chatTitle">Conversa sem numero</h2>
+          </div>
+          <button id="clearButton" type="button" class="icon-button" title="Limpar conversa">Limpar</button>
+        </header>
+
+        <div id="chatLog" class="chat-log" aria-live="polite"></div>
+
+        <form id="messageForm" class="message-form">
+          <input
+            id="messageInput"
+            type="text"
+            placeholder="Digite uma mensagem recebida do cliente..."
+            autocomplete="off"
+          />
+          <button type="submit">Enviar</button>
+        </form>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
