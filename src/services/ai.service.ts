@@ -1,6 +1,7 @@
 import type { BotConfig, Message } from "../../generated/prisma/client";
 import { DEFAULT_AI_PROMPT } from "../config/defaultPrompt";
 import type { AiMessage, AiResult } from "../types/ai";
+import { generateOpenAiReply, hasOpenAiConfig } from "./provider.service";
 
 export function buildAiMessages(params: {
   config: BotConfig;
@@ -35,14 +36,32 @@ export async function generateAiReply(params: {
   history: Message[];
   incomingText: string;
 }): Promise<AiResult> {
-  buildAiMessages(params);
+  const messages = buildAiMessages(params);
 
-  const userText = params.incomingText.toLowerCase();
+  if (process.env.AI_PROVIDER === "openai" && hasOpenAiConfig()) {
+    try {
+      return await generateOpenAiReply(messages);
+    } catch (error) {
+      console.error("Erro ao chamar OpenAI. Usando fallback simulado:", error);
+    }
+  }
+
+  return generateFallbackReply(params);
+}
+
+function generateFallbackReply(params: {
+  config: BotConfig;
+  incomingText: string;
+}): AiResult {
+  const normalizedText = params.incomingText
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+
   const escalationWords = [
     "humano",
     "atendente",
     "gerente",
-    "responsavel",
     "responsavel",
     "reclamacao",
     "cancelar",
@@ -52,16 +71,17 @@ export async function generateAiReply(params: {
     "nao resolveu",
   ];
 
-  const normalizedText = userText
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-  const needsHuman = escalationWords.some((word) => normalizedText.includes(word));
+  const needsHuman = escalationWords.some((word) =>
+    normalizedText.includes(word),
+  );
 
   if (needsHuman) {
     return {
-      reply: "Vou encaminhar isso para uma pessoa responsavel te ajudar melhor. Assim que possivel, ela continua o atendimento por aqui.",
+      reply:
+        "Vou encaminhar isso para uma pessoa responsavel te ajudar melhor. Assim que possivel, ela continua o atendimento por aqui.",
       needsHuman: true,
-      handoffReason: "Cliente pediu atendimento humano ou relatou um problema sensivel.",
+      handoffReason:
+        "Cliente pediu atendimento humano ou relatou um problema sensivel.",
       confidence: 0.92,
     };
   }
