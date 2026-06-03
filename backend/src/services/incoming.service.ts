@@ -84,7 +84,9 @@ export async function handleIncomingMessage(input: {
     return { contact, conversation, userMessage, botMessage };
   }
 
-  const history = await getRecentHistory(conversation.id);
+  const history = await getRecentHistory(conversation.id, {
+    excludeMessageId: userMessage.id,
+  });
   const ai = await generateAiReply({
     config,
     history,

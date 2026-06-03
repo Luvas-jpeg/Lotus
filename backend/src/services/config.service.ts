@@ -1,4 +1,3 @@
-import { DEFAULT_AI_PROMPT } from "../ai/prompt";
 import { prisma } from "../lib/prisma";
 import { clampNumber, getNextRunAt } from "../utils/time";
 
@@ -8,7 +7,7 @@ export async function ensureConfig() {
     update: {},
     create: {
       id: 1,
-      systemPrompt: DEFAULT_AI_PROMPT,
+      systemPrompt: "",
     },
   });
 }
@@ -26,13 +25,17 @@ export async function updateConfig(input: {
   const intervalMinutes = clampNumber(Number(input.interval || 10), 1, 1440);
   const temperature = clampNumber(Number(input.temperature || 0.6), 0, 1);
   const mode = input.mode === "proactive" ? "proactive" : "reactive";
+  const systemPrompt =
+    typeof input.systemPrompt === "string"
+      ? input.systemPrompt.trim()
+      : current.systemPrompt;
 
   return prisma.botConfig.update({
     where: { id: 1 },
     data: {
       phone: String(input.phone || "").trim(),
       managerPhone: String(input.managerPhone || "").trim(),
-      systemPrompt: String(input.systemPrompt || DEFAULT_AI_PROMPT).trim(),
+      systemPrompt,
       context: String(input.context || "").trim(),
       intervalMinutes,
       temperature,

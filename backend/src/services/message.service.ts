@@ -26,16 +26,24 @@ export async function saveMessage(
   return message;
 }
 
-export async function getRecentHistory(conversationId: number) {
+export async function getRecentHistory(
+  conversationId: number,
+  options: { excludeMessageId?: number } = {},
+) {
   return prisma.message.findMany({
     where: {
       conversationId,
+      id: options.excludeMessageId
+        ? {
+            not: options.excludeMessageId,
+          }
+        : undefined,
       role: {
         in: ["user", "bot"],
       },
     },
     orderBy: {
-      createdAt: "desc",
+      id: "desc",
     },
     take: 10,
   });

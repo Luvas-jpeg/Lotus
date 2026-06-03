@@ -36,7 +36,7 @@ export function buildAiMessages(params: {
     })),
     {
       role: "user",
-      content: input.context,
+      content: input.incomingText,
     },
   ];
 }
