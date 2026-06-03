@@ -1,4 +1,4 @@
-import { DEFAULT_AI_PROMPT } from "../config/defaultPrompt";
+import { DEFAULT_AI_PROMPT } from "../ai/prompt";
 import { prisma } from "../lib/prisma";
 import { clampNumber, getNextRunAt } from "../utils/time";
 

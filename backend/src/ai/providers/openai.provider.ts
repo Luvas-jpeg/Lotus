@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import type { AiMessage, AiResult } from "../types/ai";
+import type { AiMessage, AiResult } from "../types";
 
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,

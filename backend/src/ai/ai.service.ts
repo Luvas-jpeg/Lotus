@@ -1,7 +1,12 @@
+import { prepareAiInput } from "./tokenBudget";
 import type { BotConfig, Message } from "../../generated/prisma/client";
-import { DEFAULT_AI_PROMPT } from "../config/defaultPrompt";
-import type { AiMessage, AiResult } from "../types/ai";
-import { generateOpenAiReply, hasOpenAiConfig } from "./provider.service";
+import { DEFAULT_AI_PROMPT } from "./prompt";
+import type { AiMessage, AiResult } from "./types";
+import { reviewAiResult } from "./guardrail";
+import {
+  generateOpenAiReply,
+  hasOpenAiConfig,
+} from "./providers/openai.provider";
 
 export function buildAiMessages(params: {
   config: BotConfig;
@@ -9,7 +14,12 @@ export function buildAiMessages(params: {
   incomingText: string;
 }): AiMessage[] {
   const systemPrompt = params.config.systemPrompt.trim() || DEFAULT_AI_PROMPT;
-  const history = [...params.history].reverse();
+  const input = prepareAiInput({
+    context: params.config.context,
+    incomingText: params.incomingText,
+    history: params.history,
+  });
+  const history = [...input.history].reverse();
 
   return [
     {
@@ -18,7 +28,7 @@ export function buildAiMessages(params: {
     },
     {
       role: "system",
-      content: `Contexto configurado pelo usuario:\n\n${params.config.context || "Nenhum contexto foi informado."}`,
+      content: `Contexto do negocio:\n\n${input.context || "Nenhum contexto foi informado."}`,
     },
     ...history.map((message) => ({
       role: message.role === "bot" ? ("assistant" as const) : ("user" as const),
@@ -26,7 +36,7 @@ export function buildAiMessages(params: {
     })),
     {
       role: "user",
-      content: params.incomingText,
+      content: input.context,
     },
   ];
 }
@@ -40,13 +50,13 @@ export async function generateAiReply(params: {
 
   if (process.env.AI_PROVIDER === "openai" && hasOpenAiConfig()) {
     try {
-      return await generateOpenAiReply(messages);
+      return reviewAiResult(await generateOpenAiReply(messages));
     } catch (error) {
       console.error("Erro ao chamar OpenAI. Usando fallback simulado:", error);
     }
   }
 
-  return generateFallbackReply(params);
+  return reviewAiResult(generateFallbackReply(params));
 }
 
 function generateFallbackReply(params: {

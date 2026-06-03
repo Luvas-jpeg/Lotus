@@ -37,7 +37,7 @@ export async function getRecentHistory(conversationId: number) {
     orderBy: {
       createdAt: "desc",
     },
-    take: 20,
+    take: 10,
   });
 }
 

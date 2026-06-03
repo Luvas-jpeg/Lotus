@@ -1,4 +1,4 @@
-import { createProactiveMessage } from "./ai.service";
+import { createProactiveMessage } from "../ai/ai.service";
 import { ensureConfig } from "./config.service";
 import { getOrCreateContact } from "./contact.service";
 import { getOrCreateConversation } from "./conversation.service";
@@ -11,7 +11,12 @@ export function startScheduler() {
     try {
       const config = await ensureConfig();
 
-      if (!config.active || config.mode !== "proactive" || !config.nextRunAt || !config.phone) {
+      if (
+        !config.active ||
+        config.mode !== "proactive" ||
+        !config.nextRunAt ||
+        !config.phone
+      ) {
         return;
       }
 
@@ -23,7 +28,11 @@ export function startScheduler() {
       const conversation = await getOrCreateConversation(contact.id);
 
       if (conversation.status === "bot") {
-        await saveMessage(conversation.id, "bot", createProactiveMessage(config));
+        await saveMessage(
+          conversation.id,
+          "bot",
+          createProactiveMessage(config),
+        );
       }
 
       await prisma.botConfig.update({
